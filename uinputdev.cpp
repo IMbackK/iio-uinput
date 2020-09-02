@@ -57,7 +57,7 @@ bool UinputDevice::openDev(const std::string& uinputPath, const std::string& nam
 	return true;
 }
 
-bool UinputDevice::sendAbs(uint x, uint y, uint z)
+bool UinputDevice::sendAbs(int x, int y, int z)
 {
 	if(fd < 0) return false;
 	

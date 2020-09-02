@@ -6,11 +6,18 @@ class Accelerometer
 {
 public:
 	
-	struct Frame
+	class Frame
 	{
+	public:
 		double x;
 		double y;
 		double z;
+		inline void scale(double scale)
+		{
+			x = x*scale;
+			y = y*scale;
+			z = z*scale;
+		}
 	};
 	
 private:

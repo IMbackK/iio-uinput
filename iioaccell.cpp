@@ -82,6 +82,7 @@ double Accelerometer::readFile(const std::string& fileName, bool& status)
 double Accelerometer::readFile(std::fstream& file, bool& status)
 {
 	double result = 0;
+	file.seekg(std::ios_base::beg);
 	file >> result;
 	status = !file.rdstate();
 	return result;

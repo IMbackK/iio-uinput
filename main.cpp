@@ -31,14 +31,16 @@ int main(int argc, char** argv)
 	while(true)
 	{
 		Accelerometer::Frame frame = accel.getFrame();
-		if(abs(frame.x*256) > 512)
+		frame.scale(255/9.81);
+		std::cout<<"frame "<<frame.x<<' '<<frame.y<<' '<<frame.z<<' '<<'\n';
+		if(abs(frame.x) > 512)
 			frame.x = 0;
-		if(abs(frame.y*256) > 512)
+		if(abs(frame.y) > 512)
 			frame.y = 0;
-		if(abs(frame.z*256) > 512)
+		if(abs(frame.z) > 512)
 			frame.z = 0;
-		dev.sendAbs(frame.x*256,frame.y*256,frame.z*256);
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		dev.sendAbs(frame.x,frame.y,frame.z);
+		//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 	
 	return 0;

@@ -3,36 +3,64 @@
 #include <chrono>
 #include <string>
 #include <stdlib.h>
+#include <signal.h>
 #include "uinputdev.h"
 #include "iioaccell.h"
+#include "argpopt.h"
 
-#define IIO_DIRECTORY "/sys/bus/iio/devices/"
+bool stop = false;
+
+void sigTerm(int dummy) 
+{
+    stop = true;
+}
 
 int main(int argc, char** argv)
 {
 	UinputDevice dev;
-	if(!dev.openDev("/dev/uinput", "AcceleroeterJoystick", 0x15A5, 0x68D6))
-		return -1;
-	
-	if(argc != 2)
+	if(!dev.openDev("/dev/uinput", "AccelerometerJoystick", 0x46d, 0xc214))
 	{
-		std::cout<<"usage: iio-uinput [IIO_DEVICE]\n";
-		return 0;
+		std::cerr<<"Failed to open /dev/uinput: ";
+		perror(NULL);
+		return -1;
+	}
+	
+	std::string accellPath;
+	
+	Config config;
+	argp_parse(&argp, argc, argv, 0, 0, &config);
+	
+	if(config.device.empty())
+	{
+		config.device = Accelerometer::findAccellerometer();
+		if(config.device.empty())
+		{
+			std::cout<<"No accelerometer specifyed and none found\n";
+			return 0;
+		}
 	}
 	
 	Accelerometer accel;
 	
-	if(!accel.openDevice(std::string(IIO_DIRECTORY) + argv[1]))
+	int startingRate = accel.getRate();
+	
+	if(!accel.openDevice(config.device))
 	{
-		std::cerr<<"failed to open iio device "<<IIO_DIRECTORY<<argv[1]<<std::endl;
+		std::cerr<<"failed to open iio device "<<config.device<<std::endl;
 		return -1;
 	}
 	
-	while(true)
+	signal(SIGINT, sigTerm);
+	signal(SIGTERM, sigTerm);
+	signal(SIGHUP, sigTerm);
+	
+	if(config.rate > 0)
+		accel.setRate(config.rate);
+	
+	while(!stop)
 	{
 		Accelerometer::Frame frame = accel.getFrame();
 		frame.scale(255/9.81);
-		std::cout<<"frame "<<frame.x<<' '<<frame.y<<' '<<frame.z<<' '<<'\n';
 		if(abs(frame.x) > 512)
 			frame.x = 0;
 		if(abs(frame.y) > 512)
@@ -40,8 +68,9 @@ int main(int argc, char** argv)
 		if(abs(frame.z) > 512)
 			frame.z = 0;
 		dev.sendAbs(frame.x,frame.y,frame.z);
-		//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
+	
+	accel.setRate(startingRate);
 	
 	return 0;
 }

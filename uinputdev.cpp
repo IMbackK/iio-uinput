@@ -25,29 +25,36 @@ bool UinputDevice::openDev(const std::string& uinputPath, const std::string& nam
 	dev.id.product = product;
 	
 	ioctl(fd, UI_SET_EVBIT, EV_ABS);
+	ioctl(fd, UI_SET_EVBIT, EV_KEY);
 	ioctl(fd, UI_SET_ABSBIT, ABS_X);
 	ioctl(fd, UI_SET_ABSBIT, ABS_Y);
 	ioctl(fd, UI_SET_ABSBIT, ABS_Z);
+	
+	ioctl(fd, UI_SET_KEYBIT, BTN_TRIGGER);
+	ioctl(fd, UI_SET_KEYBIT, BTN_THUMB);
 	
 	struct uinput_abs_setup devAbsX = {0};
 	devAbsX.code = ABS_X;
 	devAbsX.absinfo.minimum = -512;
 	devAbsX.absinfo.maximum = 512;
-	devAbsX.absinfo.resolution = 1;
+	devAbsX.absinfo.flat = 5;
+	devAbsX.absinfo.fuzz = 2;
 	if(ioctl(fd, UI_ABS_SETUP, &devAbsX) < 0) return false;
 
 	struct uinput_abs_setup devAbsY = {0};
 	devAbsY.code = ABS_Y;
 	devAbsY.absinfo.minimum = -512;
 	devAbsY.absinfo.maximum = 512;
-	devAbsY.absinfo.resolution = 1;
+	devAbsY.absinfo.flat = 5;
+	devAbsY.absinfo.fuzz = 0;
 	if(ioctl(fd, UI_ABS_SETUP, &devAbsY) < 0) return false;
 	
 	struct uinput_abs_setup devAbsZ = {0};
 	devAbsZ.code = ABS_Z;
 	devAbsZ.absinfo.minimum = -512;
 	devAbsZ.absinfo.maximum = 512;
-	devAbsZ.absinfo.resolution = 1;
+	devAbsZ.absinfo.flat = 5;
+	devAbsZ.absinfo.fuzz = 0;
 	if(ioctl(fd, UI_ABS_SETUP, &devAbsZ) < 0) return false;
 	
 		

@@ -2,6 +2,8 @@
 #include <string>
 #include <fstream>
 
+#define IIO_DIRECTORY "/sys/bus/iio/devices/"
+
 class Accelerometer
 {
 public:
@@ -29,15 +31,16 @@ private:
 	double zScale;
 	
 	std::string deviceDir;
-	int rate_ = -1;
 	
 	double readFile(const std::string& fileName, bool& status);
 	double readFile(std::fstream& file, bool& status);
 	
 public:
 	
+	static std::string findAccellerometer();
 	bool openDevice(const std::string& device);
-	int rate();
+	bool setRate(unsigned int rate);
+	int getRate();
 	Frame getFrame();
 	~Accelerometer();
 };
